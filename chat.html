@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat - Couple Diary</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: var(--bg-chat);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      background-color: var(--bg-panel);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .message {
+      max-width: 75%;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      position: relative;
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .message.me {
+      background-color: var(--bubble-me);
+      align-self: flex-end;
+      border-top-right-radius: 2px;
+    }
+    .message.you {
+      background-color: var(--bubble-you);
+      align-self: flex-start;
+      border-top-left-radius: 2px;
+    }
+    .message .sender {
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+    .message .time {
+      font-size: 10px;
+      color: var(--text-muted);
+      float: right;
+      margin-left: 8px;
+      margin-top: 4px;
+    }
+    .chat-input-bar {
+      background-color: var(--bg-panel);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .chat-input-bar input {
+      flex: 1;
+      padding: 10px 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-header">
+    <div class="flex-row" style="gap: 10px;">
+      <a href="index.html" style="color: var(--text-main); text-decoration: none; display: flex; align-items: center;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </a>
+      <div class="round-avatar" id="headerAvatar" style="width: 36px; height: 36px;">
+        <svg width="18" height="18" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+      <div>
+        <div id="coupleTitle" style="font-weight: 600; font-size: 15px;">Our Diary</div>
+        <div id="activeUser" style="font-size: 12px; color: var(--text-muted);">Online</div>
+      </div>
+    </div>
+    <a href="whiteboard.html" class="btn btn-secondary" style="padding: 6px 10px; font-size: 13px;">Whiteboard</a>
+  </div>
+
+  <div class="chat-container" id="chatContainer">
+    <!-- Messages loaded dynamically -->
+  </div>
+
+  <div class="chat-input-bar">
+    <input type="text" id="msgInput" placeholder="Type a message to your partner...">
+    <button class="btn" id="sendBtn" style="padding: 10px 16px;">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+
+  <script>
+    const code = localStorage.getItem('couple_code') || 'DefaultCouple';
+    const username = localStorage.getItem('couple_username') || 'Partner';
+    const userPhoto = localStorage.getItem('couple_photo') || '';
+
+    document.getElementById('coupleTitle').textContent = code;
+    document.getElementById('activeUser').textContent = 'Logged in as ' + username;
+
+    if (userPhoto) {
+      document.getElementById('headerAvatar').innerHTML = `<img src="${userPhoto}" alt="Avatar">`;
+    }
+
+    const storageKey = 'couple_msgs_' + code;
+
+    function loadMessages() {
+      const container = document.getElementById('chatContainer');
+      const msgs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      
+      if (msgs.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); margin: auto; padding: 20px;">
+            <p>No messages yet in ${code}. Start your conversation below! 💕</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = msgs.map(m => {
+        const isMe = m.sender === username;
+        return `
+          <div class="message ${isMe ? 'me' : 'you'}">
+            ${!isMe ? `<div class="sender">${m.sender}</div>` : ''}
+            <div>${m.text}</div>
+            <div class="time">${m.time}</div>
+          </div>
+        `;
+      }).join('');
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('msgInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const msgs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      msgs.push({
+        sender: username,
+        text: text,
+        time: timeStr
+      });
+
+      localStorage.setItem(storageKey, JSON.stringify(msgs));
+      input.value = '';
+      loadMessages();
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('msgInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    loadMessages();
+  </script>
+</body>
+</html>

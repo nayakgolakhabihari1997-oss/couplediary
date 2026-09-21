@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Couple Diary</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="index.html" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        Couple Dashboard
+      </a>
+      <a href="index.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 14px;">Home</a>
+    </header>
+
+    <div class="card" style="display: flex; align-items: center; gap: 16px;">
+      <div class="round-avatar" id="dashAvatar" style="width: 56px; height: 56px;">
+        <svg width="24" height="24" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+      <div>
+        <h3 id="dashCoupleTitle">Our Diary</h3>
+        <p id="dashUser" style="color: var(--text-muted); font-size: 14px;">Logged in as Partner</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+      <div class="card" style="text-align: center; padding: 16px; margin: 0;">
+        <div style="font-size: 24px; font-weight: 700; color: var(--accent);" id="msgCount">0</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Total Messages</div>
+      </div>
+      <div class="card" style="text-align: center; padding: 16px; margin: 0;">
+        <div style="font-size: 24px; font-weight: 700; color: var(--accent);" id="boardStatus">Empty</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Whiteboard</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom: 12px;">Quick Actions</h4>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="chat.html" class="btn" style="width: 100%; text-align: center;">Open Chat</a>
+        <a href="whiteboard.html" class="btn btn-secondary" style="width: 100%; text-align: center;">Open Whiteboard</a>
+        <button class="btn btn-secondary" id="resetBtn" style="width: 100%; color: #ff5252; border-color: #ff5252;">Switch Couple / Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const code = localStorage.getItem('couple_code') || 'DefaultCouple';
+    const username = localStorage.getItem('couple_username') || 'Partner';
+    const userPhoto = localStorage.getItem('couple_photo') || '';
+
+    document.getElementById('dashCoupleTitle').textContent = code;
+    document.getElementById('dashUser').textContent = 'Logged in as ' + username;
+
+    if (userPhoto) {
+      document.getElementById('dashAvatar').innerHTML = `<img src="${userPhoto}" alt="Avatar">`;
+    }
+
+    const msgs = JSON.parse(localStorage.getItem('couple_msgs_' + code) || '[]');
+    document.getElementById('msgCount').textContent = msgs.length;
+
+    const boardSaved = localStorage.getItem('couple_board_' + code);
+    if (boardSaved) {
+      document.getElementById('boardStatus').textContent = 'Saved Artwork';
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      if (confirm('Switch couple or reset local data?')) {
+        localStorage.removeItem('couple_code');
+        localStorage.removeItem('couple_username');
+        localStorage.removeItem('couple_photo');
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
